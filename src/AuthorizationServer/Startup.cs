@@ -37,6 +37,13 @@ namespace AuthorizationServer
             // Add framework services.
             services.AddApplicationInsightsTelemetry(Configuration);
 
+            // configure identity server with in-memory stores, keys, clients and scopes
+            services.AddIdentityServer()
+                .AddTemporarySigningCredential()
+                .AddInMemoryApiResources(Config.GetApiResources())
+                .AddInMemoryClients(Config.GetClients());
+
+            //add framework services
             services.AddMvc();
         }
 
@@ -50,7 +57,14 @@ namespace AuthorizationServer
 
             app.UseApplicationInsightsExceptionTelemetry();
 
-            app.UseMvc();
+            app.UseIdentityServer();
+
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
+            });
         }
     }
 }
